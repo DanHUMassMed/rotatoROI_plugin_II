@@ -34,6 +34,7 @@ class RotateImages2 extends ProcessChannelSplitDirectory {
 
     def rotateAndSaveAllSlices(ImagePlus tif_imp, double angle, String outputDir, String lastDirectory) {
         // Get the number of slices
+        IJ.selectWindow(tif_imp.getTitle())
         int numSlices = tif_imp.getStackSize()
         
         // Loop through each slice and rotate in place
@@ -60,7 +61,6 @@ class RotateImages2 extends ProcessChannelSplitDirectory {
         // Save the entire multi-slice TIFF with rotated slices
         IJ.saveAs(tif_imp, "Tiff", fullPath)
         
-       
         tif_imp.setSlice(1)
     }
 
@@ -114,7 +114,7 @@ class RotateImages2 extends ProcessChannelSplitDirectory {
                     rotateAndSaveAllSlices(tif_488_imp, angle, outputDir, lastDirectory)
                     rotateAndSaveAllSlices(tif_561_imp, angle, outputDir, lastDirectory)
                     def roundedAngle = String.format("%.2f", angle)
-                    IJ.showMessage("Measured Angle", "The angle of rotations is: " + roundedAngle + " degrees.")
+                    //IJ.showMessage("Measured Angle", "The angle of rotations is: " + roundedAngle + " degrees.")
                 }else{
                     ud = new WaitForUserDialog("Draw a Line", "     Processing "+item_num+" of "+num_items+" in "+lastDirectory+"\n\nPlease draw a line on the image.\nAnd Clicked OK to continue or Cancel to End Processing.")
                     ud.setVisible(true)

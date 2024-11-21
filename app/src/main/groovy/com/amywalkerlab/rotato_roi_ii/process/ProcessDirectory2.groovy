@@ -23,7 +23,7 @@ abstract class ProcessDirectory2 {
         this.inputDir = directoryRoot + File.separator + inputDirNm 
         this.outputDir = directoryRoot + File.separator + outputDirNm
         this.suffix = suffix
-        debugLogger.debug("ProcessDirectory should not be called!!!!!!!")
+        
         def inputDirExists = new File(this.inputDir).isDirectory()
         def outputDirExists = new File(this.outputDir).isDirectory()
 		if (!inputDirExists) {
@@ -139,6 +139,11 @@ abstract class ProcessDirectory2 {
 
         deleteUnknownFiles(toBeRemoved);
 
+        debugLogger.debug("primaryFileSet:\n" + primaryFileSet.join("\n"));
+        debugLogger.debug("secondaryFileSet:\n" + secondaryFileSet.join("\n "));
+        debugLogger.debug("stillToProcessFileNames:\n" + stillToProcess.join("\n "));
+
+
         return stillToProcess
     }
 
@@ -198,9 +203,9 @@ abstract class ProcessDirectory2 {
             for (int index = 0; index < num_items; index++) {
                 def fileNm = list[index]
                 int item_num = index + 1  // Current file's position (1-based index)
-                debugLogger.debug("processFile: " + dirPath + File.separator + fileNm)
+                debugLogger.debug("processSubDirectories processFile: " + dirPath + File.separator + fileNm)
                 terminateProcess = processFile(new File(dirPath + File.separator + fileNm), item_num, num_items)
-                debugLogger.debug("terminateProcess= " + terminateProcess)
+                debugLogger.debug("processSubDirectories terminateProcess= " + terminateProcess)
                 if (terminateProcess) return terminateProcess
             }
         }
@@ -210,8 +215,8 @@ abstract class ProcessDirectory2 {
 
 
 
-    // This Groovy script allows to add/edit metadata associated with an image
-    // Save the image as Tiff if you want to retain metadata
+    // This Groovy script allows you to add or edit metadata associated with an image.
+    // Save the image as a TIFF to ensure metadata is retained.
 
     void editMetadata(ImagePlus imp, String name, String value ) {        
         // Get the metadata from the image (in the form of "Info")

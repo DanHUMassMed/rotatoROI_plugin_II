@@ -8,6 +8,7 @@ import ij.IJ
 import ij.ImagePlus
 import ij.util.Tools
 import java.util.Properties
+import com.amywalkerlab.rotato_roi_ii.RotatoROI2Exception
 import io.github.dphiggs01.gldataframe.utils.GLLogger
 
 abstract class ProcessChannelSplitDirectory {
@@ -20,14 +21,16 @@ abstract class ProcessChannelSplitDirectory {
     ProcessChannelSplitDirectory(String directoryRoot, String inputDirNm, String outputDirNm, String suffix = ".tif") {
         this.debugLogger = GLLogger.getLogger("debug", directoryRoot)
         this.directoryRoot = directoryRoot
-        this.inputDir = directoryRoot + File.separator + inputDirNm 
-        this.outputDir = directoryRoot + File.separator + outputDirNm
+        this.inputDir = withTrailingSeparator(directoryRoot) + inputDirNm 
+        this.outputDir = withTrailingSeparator(directoryRoot) + outputDirNm
         this.suffix = suffix
         
         def inputDirExists = checkDirectoryStructure(this.inputDir)
         def outputDirExists = new File(this.outputDir).isDirectory()
 		if (!inputDirExists) {
-    		IJ.error("Error", "Input Directory '$this.inputDir' does not exist or contains invalid subdirectory structure (Expected: DIC, 488 and 561)")
+            def errorMessage = "Input Directory '$this.inputDir' does not exist or contains invalid subdirectory structure (Expected: DIC, 488 and 561)" 
+    		//IJ.error("Error", errorMessage)
+            throw new RotatoROI2Exception(errorMessage)
 		} else if (!outputDirExists){
 			def dir = new File(this.outputDir)
             dir.mkdirs()
@@ -37,13 +40,22 @@ abstract class ProcessChannelSplitDirectory {
         }
     }
 
+    // Function to ensure directory path ends with a File.separator
+    String withTrailingSeparator(String directoryRoot) {
+        if (!directoryRoot.endsWith(File.separator)) {
+            return directoryRoot + File.separator
+        }
+        return directoryRoot
+    }
+
+
     boolean checkDirectoryStructure(String inputDirNm) {
         // Create a Path object for the input directory
         Path inputDir = Paths.get(inputDirNm)
         
         // Check if the input directory exists
         if (!Files.exists(inputDir) || !Files.isDirectory(inputDir)) {
-            println "!!Directory does not exist: $inputDirNm"
+            debugLogger.debug("Directory does not exist: $inputDirNm")
             return false
         }
 
@@ -56,12 +68,10 @@ abstract class ProcessChannelSplitDirectory {
 
         // Check if the actual subdirectories match the required ones
         if (!actualSubDirs.equals(requiredDirs)) {
-            println "Directory contains incorrect subdirectories: $actualSubDirs"
+            debugLogger.debug("Directory contains incorrect subdirectories: $actualSubDirs")
             return false
         }
 
-        // If all checks passed
-        println "Directory structure is valid."
         return true
     }
 
@@ -84,7 +94,7 @@ abstract class ProcessChannelSplitDirectory {
             for (Path dir : [path488, path561]) {
                 Path correspondingSubDir = dir.resolve(subDirName)
                 if (!Files.exists(correspondingSubDir) || !Files.isDirectory(correspondingSubDir)) {
-                    println "Missing subdirectory $subDirName in $dir"
+                    debugLogger.debug("Missing subdirectory $subDirName in $dir")
                     return false
                 }
             }
@@ -100,14 +110,12 @@ abstract class ProcessChannelSplitDirectory {
                 int fileCountInOtherDir = correspondingSubDir.toFile().listFiles().findAll { it.isFile() }.size()
 
                 if (fileCountInDIC != fileCountInOtherDir) {
-                    println "File count mismatch in subdirectory $subDirName: DIC has $fileCountInDIC, $dir has $fileCountInOtherDir"
+                    debugLogger.debug("File count mismatch in subdirectory $subDirName: DIC has $fileCountInDIC, $dir has $fileCountInOtherDir")
                     return false
                 }
             }
         }
 
-        // If all checks passed
-        println "Directory structure and file counts are valid."
         return true
     }
 
@@ -127,9 +135,9 @@ abstract class ProcessChannelSplitDirectory {
             try {
                 Path filePath = Paths.get(fileName); // Assuming fileName contains the full path
                 Files.deleteIfExists(filePath); // Delete the file if it exists
-                System.out.println("Deleted: " + filePath);
+                debugLogger.debug("Deleted: " + filePath);
             } catch (IOException e) {
-                System.err.println("Failed to delete file: " + fileName + " due to: " + e.getMessage());
+                debugLogger.debug("Failed to delete file: " + fileName + " due to: " + e.getMessage());
             }
         }
     }
@@ -184,9 +192,9 @@ abstract class ProcessChannelSplitDirectory {
             stillToProcessFileNames = stillToProcess
         }
 
-        debugLogger.debug("primaryFileSet:\n" + primaryFileSet.join("\n"));
-        debugLogger.debug("secondaryFileSet:\n" + secondaryFileSet.join("\n "));
-        debugLogger.debug("stillToProcessFileNames:\n" + stillToProcessFileNames.join("\n "));
+        //debugLogger.debug("primaryFileSet:\n" + primaryFileSet.join("\n"));
+        //debugLogger.debug("secondaryFileSet:\n" + secondaryFileSet.join("\n "));
+        //debugLogger.debug("stillToProcessFileNames:\n" + stillToProcessFileNames.join("\n "));
 
         //toBeRemoved = new ArrayList<>(secondaryFileSet);
         //toBeRemoved.removeAll(primaryFileSet);
@@ -209,10 +217,10 @@ abstract class ProcessChannelSplitDirectory {
                     }
                 }
             } catch (IOException e) {
-                println("Error reading directory: " + e.getMessage());
+                debugLogger.debug("Error reading directory: " + e.getMessage());
             }
         } else {
-            println("The given path is not a valid directory.");
+            debugLogger.debug("The given path is not a valid directory.");
         }
 
         return nextLevelDirs;
@@ -221,19 +229,17 @@ abstract class ProcessChannelSplitDirectory {
 
     // Process all the files in the provided directory
     public boolean processDirectory() {
+        //With Channel Split we only process DIC and propagate results to the other channels
         def list = listNextLevelDirectories(inputDir + File.separator + "DIC")
         def directoriesString = list.join(', ')
-        //logger.debug("directories to process: " + directoriesString)
+        debugLogger.debug("directories to process: " + directoriesString)
         if(!list){
             IJ.error("Error", "Input Directory '$this.inputDir' MUST have subdirectories for controls and experimental conditions. (e.g. raw/EV, raw/sams-1)")
         }
         return processSubDirectories(list)
     }
 
-    // Process all the files in the controls and experimental conditions directories
-    private boolean processSubDirectories(nextLevelDirectories) {
-        def terminateProcess = false
-
+    private void makeOutputDirectories(nextLevelDirectories){
         for (int i = 0; i < nextLevelDirectories.size(); i++) {
             def dirPath = nextLevelDirectories[i]
 
@@ -246,21 +252,31 @@ abstract class ProcessChannelSplitDirectory {
             outputExpDirPath.mkdirs()
             outputExpDirPath = new File(outputDir + File.separator + "DIC" + File.separator + lastDir)
             outputExpDirPath.mkdirs()
+        }
+    }
 
-            def list = compareDirectories(dirPath, outputExpDirPath.getAbsolutePath())
+    // Process all the files in the controls and experimental conditions directories
+    private boolean processSubDirectories(nextLevelDirectories) {
+        def terminateProcess = false
 
+        makeOutputDirectories(nextLevelDirectories)
 
-            int num_items = list.size()  // Total number of matching files
+        for (int i = 0; i < nextLevelDirectories.size(); i++) {
+            def inputPath = nextLevelDirectories[i]
+            def lastDir = new File(inputPath).name
+    
+            def outputDIC = outputDir + File.separator + "DIC" + File.separator + lastDir
+            def filesNotYetProcessed = compareDirectories(inputPath, outputDIC)
+            debugLogger.debug("files to process:\n" + filesNotYetProcessed.join("\n"))
 
-            // Create the subdirectory and process files
+            int num_items = filesNotYetProcessed.size()  // Total number of matching files
             for (int index = 0; index < num_items; index++) {
-                def fileNm = list[index]
-                int item_num = index + 1  // Current file's position (1-based index)
-                terminateProcess = processFile(new File(dirPath + File.separator + fileNm), item_num, num_items)
+                def fileNm = filesNotYetProcessed[index]
+                int item_num = index + 1  // Current file's position (0 base index + 1)
+                terminateProcess = processFile(new File(inputPath + File.separator + fileNm), item_num, num_items)
                 if (terminateProcess) return terminateProcess
             }
         }
-
         return terminateProcess      
     }
 

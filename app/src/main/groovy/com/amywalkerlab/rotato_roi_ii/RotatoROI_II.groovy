@@ -8,6 +8,7 @@ import ij.plugin.PlugIn
 
 import ij.gui.GenericDialog
 import ij.Prefs
+import ij.gui.GenericDialog;
 
 import com.amywalkerlab.rotato_roi_ii.process.ND2Images
 import com.amywalkerlab.rotato_roi_ii.process.RotateImages2
@@ -32,8 +33,13 @@ class Rotato_ROI_II implements PlugIn{
             runPipeline();
             IJ.showMessage("RotatoROI_II Run Completed.");
         } catch (RotatoROI2Exception e) {
-            IJ.showMessage("Error: " + e.getMessage());
-            e.printStackTrace();
+            //IJ.showMessage("RotatoROI_II Run Halted.\n Error: " + e.getMessage());
+            GenericDialog gd = new GenericDialog("Error");
+            gd.setInsets(0, 0, 0);  // Adjusts padding
+            gd.addMessage("<html><font color='red'>RotatoROI_II Run Halted!</font><br>Error: " + e.getMessage() + "</html>");
+            gd.hideCancelButton(); 
+            gd.showDialog();
+            //e.printStackTrace();
         }
 	}
 
@@ -53,14 +59,6 @@ class Rotato_ROI_II implements PlugIn{
         String[]  process_headings = [PROCESS_SELECT_TITLE]
         gd.addCheckboxGroup(1, 3, process_labels, process_defaultValues, process_headings)
         gd.addMessage("")
-
-        String[]  fluorescence_labels = ["488", "561"]
-        def f1 = Prefs.get(Constants.FOUR_88_OPT, true)
-        def f2 = Prefs.get(Constants.FIVE_61_OPT, true)
-        boolean[] fluorescence_defaultValues = [f1, f2]
-        String[]  fluorescence_headings = ["Use Fluorescence"]
-        gd.addCheckboxGroup(1, 2, fluorescence_labels, fluorescence_defaultValues, fluorescence_headings)
-        
 
         gd.addMessage("")
         gd.setInsets(0, 0, 0 )
@@ -94,16 +92,6 @@ class Rotato_ROI_II implements PlugIn{
         Prefs.set(Constants.PROCESS_ROTATE_OPT, processValues[PROCESS_ROTATE])
         Prefs.set(Constants.PROCESS_CROP_OPT, processValues[PROCESS_CROP])
 
-        def fluorescences = []
-        def select488 = gd.getNextBoolean() // 488 Checkbox
-        def select561 = gd.getNextBoolean() // 561 Checkbox
-        if(select488) fluorescences << "488"
-        if(select561) fluorescences << "561"
-    
-        Prefs.set(Constants.FOUR_88_OPT, select488)
-        Prefs.set(Constants.FIVE_61_OPT, select561)
-        
-
         cropHeight = gd.getNextString()
         Prefs.set(Constants.CROP_HEIGHT, cropHeight)
 
@@ -111,7 +99,7 @@ class Rotato_ROI_II implements PlugIn{
         Prefs.set(Constants.CROP_WIDTH, cropWidth)
         Prefs.savePreferences() 
 
-        return [directoryRoot, fluorescences, processValues, cropHeight, cropWidth]
+        return [directoryRoot, processValues, cropHeight, cropWidth]
 
     }
 
@@ -121,7 +109,7 @@ class Rotato_ROI_II implements PlugIn{
         def terminateProcess = false
         def options = getOptions()
         if (options != null) {
-            def (directoryRoot, fluorescences, processValues, cropHeight, cropWidth) = options  
+            def (directoryRoot, processValues, cropHeight, cropWidth) = options  
             print("directoryRoot "+directoryRoot)
             def debugLogger = GLLogger.getLogger("debug", directoryRoot)
             /******************* LOGGER LEVEL *************************/
@@ -136,6 +124,7 @@ class Rotato_ROI_II implements PlugIn{
                 def nd2Images = new ND2Images(directoryRoot)
                     logger.log("Process .nd2","Starting ND2 process II")
                     terminateProcess = nd2Images.processDirectory()
+                    debugLogger.debug("main terminateProcess="+terminateProcess)
             }
             logger.log("terminateProcess: !!!" + terminateProcess )
 

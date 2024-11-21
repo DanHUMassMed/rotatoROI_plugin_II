@@ -81,6 +81,7 @@ class ND2Images extends ProcessDirectory2 {
                 }
 
             }
+            debugLogger.debug("out of loop")
 
         } else {
             println("No images were loaded from the .nd2 file.")
@@ -109,6 +110,7 @@ class ND2Images extends ProcessDirectory2 {
             void run() {
                 if (dialog.isVisible()) {
                     dialog.dispose()
+                    latch.countDown() 
                 }
             }
         }, 2000) // 1000 milliseconds = 1 second
@@ -131,7 +133,8 @@ class ND2Images extends ProcessDirectory2 {
         if (cancelSelected.get()) {
             terminateProcess = true
         }
-        println("terminateProcess="+terminateProcess)
+        debugLogger.debug("terminateProcess="+terminateProcess)
+        
 
         return terminateProcess
 	}

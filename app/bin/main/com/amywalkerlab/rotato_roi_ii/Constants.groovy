@@ -1,7 +1,7 @@
 package com.amywalkerlab.rotato_roi_ii
 
 class Constants {
-    static final String START_MESSAGE = "Note: The Base Directory is the location where all pipeline processing will take place.\nThis is the directory where the experiment image directories can be found."
+    static final String START_MESSAGE = "Note: The Base Directory is the location where all pipeline processing will take place. This is the directory where the experiment image directories can be found."
     static final String ROOT_DIR_OPT = "AmyWalkerLab-image-prep.rootDirOpt"
     static final String CROP_HEIGHT = "AmyWalkerLab-image-prep.cropHeight"
     static final String CROP_WIDTH = "AmyWalkerLab-image-prep.cropWidth"

@@ -27,11 +27,10 @@ abstract class ProcessDirectory2 {
         def inputDirExists = new File(this.inputDir).isDirectory()
         def outputDirExists = new File(this.outputDir).isDirectory()
 		if (!inputDirExists) {
-    		IJ.error("Error", "Input Directory '${this.inputDir}' does not exist.")
+    		IJ.error("Error", "Input Directory '$this.inputDir' does not exist.")
 		} else if (!outputDirExists){
 			def dir = new File(this.outputDir)
             dir.mkdirs()
-            this.debugLogger.logger("ProcessDirectory2 making dir: ${dir.toString()}")
         }else{
             compareSubdirectories(this.inputDir, this.outputDir)
         }
@@ -75,7 +74,7 @@ abstract class ProcessDirectory2 {
         for (Path inputSubDirPath : outputSubDirs) {
             if (!primarySubDirNames.contains(inputSubDirPath.getFileName().toString())) {
                 deleteUnkownDirectory(inputSubDirPath.toString())  // Use the full path as a string
-                this.debugLogger.logger("Deleted directory: ${inputSubDirPath}")        
+                println "Deleted directory: $inputSubDirPath"
             }
         }
         return primarySubDirNames
@@ -193,8 +192,7 @@ abstract class ProcessDirectory2 {
             def lastDir = new File(dirPath).name
 
             def outputExpDirPath = new File(outputDir + File.separator + lastDir)
-            // outputExpDirPath.mkdirs()
-            // IJ.showMessage("outputExpDirPath", outputExpDirPath.toString())
+            outputExpDirPath.mkdirs()
             debugLogger.debug("calling compareDirectories")
             def list = compareDirectories(dirPath, outputExpDirPath.getAbsolutePath())
 
@@ -238,6 +236,13 @@ abstract class ProcessDirectory2 {
             imp.setProperty("Info", writer.toString())
         }
     }
+
+
+    //Used for testing
+    // protected boolean processFile_test(File file, int item_num, int num_items){
+    //     println("file="+file+" item_num="+item_num+" num_items="+num_items)
+    //     return false
+    // }
 
     // Abstract method to be implemented by subclasses
     protected abstract boolean processFile(File file, int item_num, int num_items)

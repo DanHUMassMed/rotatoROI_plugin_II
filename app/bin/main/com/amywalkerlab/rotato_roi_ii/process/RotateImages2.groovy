@@ -33,37 +33,35 @@ class RotateImages2 extends ProcessChannelSplitDirectory {
 
 
     def rotateAndSaveAllSlices(ImagePlus tif_imp, double angle, String outputDir, String lastDirectory) {
-        // Get the number of slices WTF
-        if (tif_imp != null) {
-            IJ.selectWindow(tif_imp.getTitle())
-            int numSlices = tif_imp.getStackSize()
+        // Get the number of slices
+        IJ.selectWindow(tif_imp.getTitle())
+        int numSlices = tif_imp.getStackSize()
+        
+        // Loop through each slice and rotate in place
+        for (int i = 1; i <= numSlices; i++) {
+            // Set the current slice
+            tif_imp.setSlice(i)
             
-            // Loop through each slice and rotate in place
-            for (int i = 1; i <= numSlices; i++) {
-                // Set the current slice
-                tif_imp.setSlice(i)
-                
-                // Get the processor for the current slice
-                ImageProcessor ip = tif_imp.getProcessor()
-                
-                // Rotate the current slice
-                ip.setInterpolationMethod(ImageProcessor.BILINEAR)
-                ip.rotate(angle)
-            }
+            // Get the processor for the current slice
+            ImageProcessor ip = tif_imp.getProcessor()
             
-            // Construct the filename for saving the rotated image
-            def fileName = tif_imp.getTitle()
-            fileName = "rotated_" + fileName
-            
-            def channel = getChannelFromImageTitle(tif_imp)
-
-            def fullPath = outputDir + File.separator + channel + File.separator + lastDirectory + File.separator + fileName
-            
-            // Save the entire multi-slice TIFF with rotated slices
-            IJ.saveAs(tif_imp, "Tiff", fullPath)
-            
-            tif_imp.setSlice(1)
+            // Rotate the current slice
+            ip.setInterpolationMethod(ImageProcessor.BILINEAR)
+            ip.rotate(angle)
         }
+        
+        // Construct the filename for saving the rotated image
+        def fileName = tif_imp.getTitle()
+        fileName = "rotated_" + fileName
+        
+        def channel = getChannelFromImageTitle(tif_imp)
+
+        def fullPath = outputDir + File.separator + channel + File.separator + lastDirectory + File.separator + fileName
+        
+        // Save the entire multi-slice TIFF with rotated slices
+        IJ.saveAs(tif_imp, "Tiff", fullPath)
+        
+        tif_imp.setSlice(1)
     }
 
     def getChannelFromImageTitle(ImagePlus tif_imp) {
@@ -130,9 +128,9 @@ class RotateImages2 extends ProcessChannelSplitDirectory {
  
         }
 
-       tif_dic_imp?.close()
-       tif_488_imp?.close()
-       tif_561_imp?.close()
+       tif_dic_imp.close()
+       tif_488_imp.close()
+       tif_561_imp.close()
 
         return terminateProcess
 	}

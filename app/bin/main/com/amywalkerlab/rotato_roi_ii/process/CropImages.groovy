@@ -51,32 +51,30 @@ class CropImages extends ProcessChannelSplitDirectory {
 
 
     def cropAndSave(ImagePlus image, def rectangleRoi, String outputDir, String lastDirectory) {
-        // Make the image that was passed in the active image WTF
-        if (image != null) {
-            image.show()  // Ensure the passed image is the active one
+        // Make the image that was passed in the active image
+        image.show()  // Ensure the passed image is the active one
 
-            def imageTitle = image.getTitle()
-            String roiTitle = out_prefix + imageTitle.replaceFirst(in_prefix, "")
+        def imageTitle = image.getTitle()
+        String roiTitle = out_prefix + imageTitle.replaceFirst(in_prefix, "")
 
-            // // Duplicate the image with the specified range (whole stack) and title
-            // def args = "duplicate range=1-" + image.getStackSize() + " title='" + roiTitle + "' use"
-            // IJ.run("Duplicate...", args)
+        // // Duplicate the image with the specified range (whole stack) and title
+        // def args = "duplicate range=1-" + image.getStackSize() + " title='" + roiTitle + "' use"
+        // IJ.run("Duplicate...", args)
 
-            // // Get the duplicated image
-            // ImagePlus roiImage = IJ.getImage()
-            def roiImage = image
-            // Apply the cropping operation based on the ROI
-            roiImage.setRoi(rectangleRoi)
-            IJ.run(roiImage, "Crop", "stack")
+        // // Get the duplicated image
+        // ImagePlus roiImage = IJ.getImage()
+        def roiImage = image
+        // Apply the cropping operation based on the ROI
+        roiImage.setRoi(rectangleRoi)
+        IJ.run(roiImage, "Crop", "stack")
 
-            // Save the cropped image
-            def channel = getChannelFromImageTitle(image)
-            def fullPath = outputDir + File.separator + channel + File.separator + lastDirectory + File.separator + roiTitle
-            IJ.saveAs(roiImage, "Tiff", fullPath)
+        // Save the cropped image
+        def channel = getChannelFromImageTitle(image)
+        def fullPath = outputDir + File.separator + channel + File.separator + lastDirectory + File.separator + roiTitle
+        IJ.saveAs(roiImage, "Tiff", fullPath)
 
-            // Close the duplicated image after saving
-            roiImage.close()
-        }
+        // Close the duplicated image after saving
+        roiImage.close()
     }
 
 	@Override
@@ -93,11 +91,11 @@ class CropImages extends ProcessChannelSplitDirectory {
         //debugLogger.debug(tif_488.getPath())
         //debugLogger.debug(tif_561.getPath())
         def ImagePlus tif_561_imp = IJ.openImage(tif_561.getPath())
-        tif_561_imp?.show()
+        tif_561_imp.show()
         def ImagePlus tif_488_imp = IJ.openImage(tif_488.getPath())
-        tif_488_imp?.show()
+        tif_488_imp.show()
         def ImagePlus tif_dic_imp = IJ.openImage(tif_dic.getPath())
-        tif_dic_imp?.show()
+        tif_dic_imp.show()
 
         // Prompt user select a point
         def done = false
@@ -135,9 +133,9 @@ class CropImages extends ProcessChannelSplitDirectory {
             IJ.wait(50)              
         }
         
-        tif_dic_imp?.close()
-        tif_488_imp?.close()
-        tif_561_imp?.close()
+        tif_dic_imp.close()
+        tif_488_imp.close()
+        tif_561_imp.close()
         return terminateProcess
 	}
 }

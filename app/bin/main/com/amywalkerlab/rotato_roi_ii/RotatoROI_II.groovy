@@ -8,13 +8,7 @@ import ij.plugin.PlugIn
 
 import ij.gui.GenericDialog
 import ij.Prefs
-import java.awt.event.ActionListener
-import java.awt.event.ActionEvent
-import java.awt.Desktop
-
-import java.io.File
-import java.io.OutputStream
-import java.io.InputStream
+import ij.gui.GenericDialog;
 
 import com.amywalkerlab.rotato_roi_ii.process.ND2Images
 import com.amywalkerlab.rotato_roi_ii.process.RotateImages2
@@ -24,7 +18,7 @@ import io.github.dphiggs01.gldataframe.utils.GLLogger
 
 class Rotato_ROI_II implements PlugIn{
     final String PIPELINE_TITLE       = "Pipeline - RotatoROI_II v0.1.2"
-    final String PROCESS_ND2_TITLE    = "Process .nd2"
+    final String PROCESS_ND2_TITLE   = "Process .nd2"
     final String PROCESS_ROTATE_TITLE = "Rotate Images"
     final String PROCESS_CROP_TITLE   = "Crop Images"
     final String PROCESS_SELECT_TITLE = "Execute Pipeline Step"   
@@ -53,27 +47,7 @@ class Rotato_ROI_II implements PlugIn{
         def gd = new GenericDialog(PIPELINE_TITLE)
         def messageFont = new Font("Arial", Font.BOLD, 14)
         gd.addMessage(Constants.START_MESSAGE, messageFont)
-        gd.addButton("Help",{ ActionEvent e ->
-                URL htmlRes = getClass().getResource("/instructions.html")
-                if (htmlRes==null) {
-                    IJ.showMessage("Error", "instruction.html resource not found inside jar")
-                    return
-                }
-                try{
-                    
-                    File tmpHtml = File.createTempFile("instr", ".html")
-                    tmpHtml.deleteOnExit()
-                    tmpHtml.text = htmlRes.openStream().text
-
-                    Desktop.desktop.browse(tmpHtml.toURI())
-                }catch(Exception ex){
-                    IJ.showMessage("Error", "Error opening instructions: " + ex.getMessage())
-                    return
-                }
-
-                //Desktop.desktop.browse(res.toURI())
-            } as ActionListener);
-
+            
         def directoryRoot = (String) Prefs.get(Constants.ROOT_DIR_OPT, IJ.getDirectory("home"));
         gd.addDirectoryField("Base Directory", directoryRoot)
 
@@ -108,7 +82,6 @@ class Rotato_ROI_II implements PlugIn{
         
         // Process the dialog
         directoryRoot = gd.getNextString()
-        println("directoryRoot "+directoryRoot)
         Prefs.set(Constants.ROOT_DIR_OPT, directoryRoot)
         
         def processValues = []
@@ -137,7 +110,7 @@ class Rotato_ROI_II implements PlugIn{
         def options = getOptions()
         if (options != null) {
             def (directoryRoot, processValues, cropHeight, cropWidth) = options  
-            print("directoryRoot " + directoryRoot)
+            print("directoryRoot "+directoryRoot)
             def debugLogger = GLLogger.getLogger("debug", directoryRoot)
             /******************* LOGGER LEVEL *************************/
             debugLogger.setLevel(GLLogger.LogLevel.DEBUG)
@@ -149,26 +122,23 @@ class Rotato_ROI_II implements PlugIn{
             
             if(processValues[PROCESS_ND2]){
                 def nd2Images = new ND2Images(directoryRoot)
-                logger.log("Process .nd2", "Starting ND2 process")
-                terminateProcess = nd2Images.processDirectory()
-                debugLogger.debug("nd2Images terminateProcess="+terminateProcess)
-                logger.log("Process .nd2", "Ending ND2 process")
+                    logger.log("Process .nd2","Starting ND2 process II")
+                    terminateProcess = nd2Images.processDirectory()
+                    debugLogger.debug("main terminateProcess="+terminateProcess)
             }
+            logger.log("terminateProcess: !!!" + terminateProcess )
 
-            if(!terminateProcess && processValues[PROCESS_ROTATE]){
+            if(processValues[PROCESS_ROTATE]){
                 def rotateImages = new RotateImages2(directoryRoot)
-                logger.log("RotateImages","Starting rotate process")
-                terminateProcess = rotateImages.processDirectory()
-                debugLogger.debug("RotateImages terminateProcess="+terminateProcess)
-                logger.log("RotateImages", "Ending rotate process")
+                    logger.log("RotateImages","Starting rotate process II")
+                    terminateProcess = rotateImages.processDirectory()
             }
+            logger.log("terminateProcess: !!!" + terminateProcess )
 
             if(!terminateProcess && processValues[PROCESS_CROP]){
                 def cropImages = new CropImages(directoryRoot,cropHeight, cropWidth)
-                logger.log("CropImages","Starting crop process")
-                terminateProcess = cropImages.processDirectory()
-                debugLogger.debug("RotateImages terminateProcess="+terminateProcess)
-                logger.log("CropImages", "Ending crop process")
+                    logger.log("CropImages","Starting crop process II")
+                    terminateProcess = cropImages.processDirectory()
             }
         
             def endTime = new Date()

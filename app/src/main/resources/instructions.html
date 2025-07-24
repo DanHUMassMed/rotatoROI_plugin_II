@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RotatoROI_II Plugin Setup Instructions</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      line-height: 1.6;
+      margin: 2em;
+    }
+    code {
+      background-color: #f4f4f4;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    h1, h2 {
+      color: #2c3e50;
+    }
+    ul {
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>RotatoROI_II Plugin Setup Instructions</h1>
+
+  <p style="font-size: 1.17em; font-weight: normal;">The <strong>RotatoROI_II Plugin</strong> processes <code>.nd2</code> files (Nikon NIS‑Dimensional 2 format) and relies on a specific directory structure to locate these image files.</p>
+
+  <h2>Before Processing (Process Preparation)</h2>
+  <ul>
+    <li>A <code>[root]</code> directory for your process must be created.
+      <ul>
+        <li>This is where the <strong>RotatoROI_II Plugin</strong> will search for files and create output.</li>
+        <li>This directory can be anywhere on your hard drive.</li>
+        <li>Use a naming convention that aligns with the overall experiment.
+          <ul>
+            <li>For example: <code>[root] = /Users/dan/MitoPaper_imageprocessing/2024-04-19</code></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+
+  <img src="./directory_structure_start.png" alt="Directory Structure Example" style="max-width: 75%; height: auto;">
+
+
+  <h2>The First Pipeline Step (Process .nd2)</h2>
+
+  <h3>INPUT</h3>
+  <ul>
+    <li>The <strong>'Process .nd2'</strong> step expects to find <code>.nd2</code> files in the <code>[root]/raw/[experimental condition]/</code> directory described above.</li>
+    <li>Within <code>[root]/raw</code>, you <em>must</em> create additional <code>[experimental condition]</code> subdirectories to hold the <code>.nd2</code> files.</li>
+    <li>Each <code>.nd2</code> file is <strong>expected</strong> to contain 3 channels:
+      <ul>
+        <li>Channel 1: DIC</li>
+        <li>Channel 2: 488</li>
+        <li>Channel 3: 561</li>
+      </ul>
+    </li>
+  </ul>
+
+  <h3>OUTPUT</h3>
+  <ul>
+    <li>The output of the 'Process .nd2' step is a new directory: <code>[root]/channel_split</code></li>
+    <li>This directory will contain subdirectories for each channel:
+      <ul>
+        <li><code>[root]/channel_split/488/[experimental condition]</code></li>
+        <li><code>[root]/channel_split/561/[experimental condition]</code></li>
+        <li><code>[root]/channel_split/DIC/[experimental condition]</code></li>
+      </ul>
+    </li>
+    <li>Note: Channel not found will be ignored.</li>
+  </ul>
+
+</body>
+</html>

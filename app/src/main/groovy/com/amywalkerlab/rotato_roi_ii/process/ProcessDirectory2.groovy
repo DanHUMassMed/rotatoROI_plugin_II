@@ -217,27 +217,7 @@ abstract class ProcessDirectory2 {
 
 
 
-    // This Groovy script allows you to add or edit metadata associated with an image.
-    // Save the image as a TIFF to ensure metadata is retained.
 
-    void editMetadata(ImagePlus imp, String name, String value ) {        
-        // Get the metadata from the image (in the form of "Info")
-        String metadata = imp.getProperty("Info")
-        
-        if (metadata != null) {
-            Properties props = new Properties()
-            // Load the metadata into the Properties object
-            props.load(new StringReader(metadata))
-
-            // Add a new key-value pair (or update it)
-            props.setProperty(name, value)
-
-            // Save the updated metadata back to the image
-            StringWriter writer = new StringWriter()
-            props.store(writer, null)
-            imp.setProperty("Info", writer.toString())
-        }
-    }
 
     // Abstract method to be implemented by subclasses
     protected abstract boolean processFile(File file, int item_num, int num_items)

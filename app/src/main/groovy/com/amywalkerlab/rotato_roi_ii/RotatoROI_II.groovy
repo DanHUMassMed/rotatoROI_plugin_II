@@ -15,6 +15,8 @@ import java.awt.Desktop
 import java.io.File
 import java.io.OutputStream
 import java.io.InputStream
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import com.amywalkerlab.rotato_roi_ii.process.ND2Images
 import com.amywalkerlab.rotato_roi_ii.process.RotateImages2
@@ -55,15 +57,23 @@ class Rotato_ROI_II implements PlugIn{
         gd.addMessage(Constants.START_MESSAGE, messageFont)
         gd.addButton("Help",{ ActionEvent e ->
                 URL htmlRes = getClass().getResource("/instructions.html")
+                URL imgRes  = getClass().getResource("/directory_structure_start.png")
                 if (htmlRes==null) {
                     IJ.showMessage("Error", "instruction.html resource not found inside jar")
                     return
                 }
                 try{
-                    
-                    File tmpHtml = File.createTempFile("instr", ".html")
-                    tmpHtml.deleteOnExit()
+                    // Create a temp directory
+                    File tmpDir = Files.createTempDirectory("instr").toFile()
+                    tmpDir.deleteOnExit()
+
+                    // Copy html
+                    File tmpHtml = new File(tmpDir, "instructions.html")
                     tmpHtml.text = htmlRes.openStream().text
+
+                    // Copy image
+                    File tmpImg = new File(tmpDir, "directory_structure_start.png")
+                    tmpImg.bytes = imgRes.openStream().bytes
 
                     Desktop.desktop.browse(tmpHtml.toURI())
                 }catch(Exception ex){
